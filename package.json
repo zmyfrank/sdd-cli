@@ -1,0 +1,37 @@
+{
+  "name": "sdd-ql-workflow",
+  "version": "2.2.2",
+  "description": "SDD (Skill-Driven Development) CLI - Hybrid workflow with OpenSpec flexibility + Trinity tracking ( Trinity Workflow v2 )",
+  "type": "module",
+  "bin": {
+    "sdd": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "templates"
+  ],
+  "keywords": [
+    "sdd",
+    "openspec",
+    "workflow",
+    "cli",
+    "trinity",
+    "claude",
+    "opencode"
+  ],
+  "author": "ql",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ql-wade/sdd-cli"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0",
+    "ora": "^8.0.0"
+  }
+}
