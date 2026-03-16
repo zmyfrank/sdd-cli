@@ -349,6 +349,18 @@ node bin/cli.js list
 
 ## Version History
 
+### v2.2.6
+- Add Worktrunk config (wt.toml)
+- Pre-switch: sync OpenSpec specs from origin/main
+- Pre-merge: run tests and merging
+- Post-switch: hint for start Agent
+- post-merge: notify when merge complete
+
+- copy wt.toml to `.config/` directory
+
+- Update CLI to copy wt.toml
+- Update version history
+
 ### v2.2.5
 - Fix: Correct archive path from `openspec/changes/archive/` to `openspec/archive/`
 
