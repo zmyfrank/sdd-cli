@@ -375,32 +375,61 @@ archive:
       - move: changes/{id} → changes/archive/{YYYY-MM-DD}-{id}/
       - generate: archive summary
       - update: progress.md (归档日志)
-      - clear: .active file
   instruction: |
     ## 归档流程
 
     ### Phase 1: 最终验证
     - 确认 verify 已通过
-    - 磀认追踪文件完整
+    - 磌认追踪文件完整
 
     ### Phase 2: 执行归档
-    1. **合并 Delta Specs 到 Main Specs**
-       - ADDED: 复制到 main-specs/
-       - MODIFIED: 合并到 main-specs/
-       - REMOVED: 从 main-specs/ 删除
-    2. **移动变更目录到归档位置**
-       - openspec/changes/{id}/
-       → openspec/archive/{id}/
-    3. **清理活跃状态**
-       - 清空 openspec/.active 文件
-       - 或指向下一个活跃变更
+    1. **使用 OpenSpec CLI 归档**
+       ```bash
+       openspec archive --yes
+       ```
 
-    3. **生成总结报告**
-       合并追踪文件生成变更总结:
-       - 从 task_plan.md 提取阶段进度
-       - 从 findings.md 提取架构决策
-       - 从 progress.md 提取关键日志
-       - 从 delta-log.md 提取规格变更
+    2. **OpenSpec CLI 会自动**:
+       - 合并 Delta Specs 到 Main Specs
+       - 移动变更到 archive/ 目录
+       - 清理 .active 文件
+
+    ### Phase 3: Specs 提取验证（关键）
+
+    ⚠️ 必须执行此步骤！
+
+    ```bash
+    # 确保 specs 目录存在
+    mkdir -p openspec/specs
+
+    # 验证 specs 已提取
+    ls -la openspec/specs/
+    ```
+
+    如果 `openspec archive` 没有自动合并 specs：
+
+    ```bash
+    # 手动提取 specs
+    CHANGE_ID="<归档的变更ID>"
+    cp openspec/changes/archive/$CHANGE_ID/specs/*.md openspec/specs/ 2>/dev/null || true
+    cp openspec/changes/archive/$CHANGE_ID/specs/specs/*.md openspec/specs/ 2>/dev/null || true
+    ```
+
+    ### Phase 4: 生成 INDEX.md
+
+    为持久化 specs 目录生成索引文件。
+
+    ⛔ 禁止操作:
+    - 直接使用 `mv` 移动变更目录
+    - 跳过 specs 提取验证
+
+  postArchive:
+    - verify: specs extracted to openspec/specs/
+    - generate: INDEX.md in openspec/specs/
+  criticalRules:
+    - "禁止使用 mv 命令移动变更目录"
+    - "必须使用 openspec archive 命令"
+    - "归档后必须验证 specs 已提取"
+
 
 # ================================================
 # 3-Strike 协议配置

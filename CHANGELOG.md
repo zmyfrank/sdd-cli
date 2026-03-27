@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-03-27
+
+### Added
+- **Critical Rules for Archive**: 强制归档规则，防止 specs 丢失
+- **Specs Extraction Verification**: 归档后自动验证 specs 提取
+- **Manual Extraction Fallback**: 手动提取 specs 备用方案
+- **INDEX.md Generation**: 持久化 specs 目录索引生成
+
+### Changed
+- `trinity-archive` skill v2.3 → v2.4
+- `schema.yaml` 新增 `postArchive` 和 `criticalRules` 配置
+
+### Fixed
+- 修复 AI 直接使用 `mv` 命令导致 specs 未提取的问题
+- 归档后 `openspec/specs/` 目录不存在的问题
+
 ## [2.3.1] - 2026-03-25
 
 ### Fixed

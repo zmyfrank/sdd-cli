@@ -5,13 +5,30 @@ license: MIT
 compatibility: 需要 openspec CLI 和 planning-with-files skill
 metadata:
   author: trinity
-  version: "2.3"
+  version: "2.4"
   generatedBy: "trinity-workflow-v2"
+  critical: "必须使用 openspec archive 命令，禁止直接 mv"
 ---
 
 # trinity:archive - 归档变更
 
 > **Trinity Workflow v2** - 三段式调用：planning-with-files → OpenSpec CLI → planning-with-files
+
+---
+
+## ⛔ 强制规则
+
+```
+🚫 禁止使用 mv 命令移动变更目录
+🚫 禁止手动修改 .active 文件
+✅ 必须使用 openspec archive 命令
+✅ 归档后必须验证 specs 已提取到 openspec/specs/
+```
+
+**违反规则的后果**：
+- Specs 不会被合并到持久化目录
+- 丢失 Delta Specs 变更记录
+- 破坏 specs 追踪链路
 
 ---
 
@@ -67,13 +84,30 @@ Use the Skill tool with skill: "planning-with-files"
 ⚠️ CRITICAL: 必须使用 OpenSpec CLI 进行归档，不要直接使用 bash 命令
 ```
 
-**正确做法 - 调用 OpenSpec CLI**:
+#### 步骤 2.1: 检查变更状态
 
 ```bash
-# 1. 获取当前活跃变更
+# 确认有活跃变更
 cat openspec/.active
 
-# 2. 执行归档（使用 OpenSpec CLI）
+# 检查变更目录存在
+ls openspec/changes/
+
+# 检查是否有 specs 目录
+ls openspec/changes/{change-id}/specs/ 2>/dev/null || echo "No specs in this change"
+```
+
+#### 步骤 2.2: 确保 specs 目录存在
+
+```bash
+# 如果不存在 openspec/specs/ 目录，先创建
+mkdir -p openspec/specs
+```
+
+#### 步骤 2.3: 执行归档（使用 OpenSpec CLI）
+
+```bash
+# 执行归档
 openspec archive --yes
 
 # 或指定变更名称
@@ -87,7 +121,50 @@ openspec archive <change-id> --yes
 - 移动变更到 `openspec/changes/archive/{YYYY-MM-DD}-{change-id}/`
 - 清理 .active 文件
 
-**错误做法 - 不要直接使用 bash**:
+#### 步骤 2.4: 验证 Specs 提取（关键步骤）
+
+```bash
+# ⚠️ 必须验证：检查 specs 是否被正确提取到持久化目录
+echo "=== 检查 specs 提取结果 ==="
+
+# 1. 检查 openspec/specs/ 目录是否有内容
+ls -la openspec/specs/
+
+# 2. 如果归档前变更目录有 specs，确保它们已被合并
+# 对比归档前后的 specs 数量
+echo "归档变更中的 specs:"
+find openspec/changes/archive/ -path "*/specs/*.md" -type f 2>/dev/null | wc -l
+
+echo "持久化 specs 目录:"
+ls openspec/specs/*.md 2>/dev/null | wc -l
+```
+
+#### 步骤 2.5: 手动提取 Specs（备用方案）
+
+如果 `openspec archive` 没有自动合并 specs，执行手动提取：
+
+```bash
+# 设置变量
+CHANGE_ID="<change-id>"
+ARCHIVE_DIR="openspec/changes/archive"
+SPECS_DIR="openspec/specs"
+
+# 从归档目录提取 specs 到持久化目录
+if [ -d "$ARCHIVE_DIR/$CHANGE_ID/specs" ]; then
+  echo "提取 specs 到持久化目录..."
+  cp -r "$ARCHIVE_DIR/$CHANGE_ID/specs/"*.md "$SPECS_DIR/" 2>/dev/null || true
+
+  # 如果是嵌套目录结构 (specs/specs/*.md)
+  if [ -d "$ARCHIVE_DIR/$CHANGE_ID/specs/specs" ]; then
+    cp -r "$ARCHIVE_DIR/$CHANGE_ID/specs/specs/"*.md "$SPECS_DIR/" 2>/dev/null || true
+  fi
+
+  echo "✓ Specs 已提取到 $SPECS_DIR/"
+  ls -la "$SPECS_DIR/"
+fi
+```
+
+**错误做法 - 绝对禁止**:
 
 ```bash
 # ❌ 错误：不要直接使用 mv 命令
@@ -95,6 +172,8 @@ mv openspec/changes/{change-id}/ openspec/changes/archive/{change-id}/
 
 # ❌ 错误：不要手动清理
 echo "" > openspec/.active
+
+# ❌ 错误：不要跳过 specs 提取验证
 ```
 
 ---
@@ -168,6 +247,11 @@ Use the Skill tool with skill: "planning-with-files"
 
 📁 归档位置: openspec/changes/archive/{YYYY-MM-DD}-{change-id}/
 📝 总结报告: 已更新到 progress.md
+
+✅ Specs 提取验证:
+   - 归档前 specs: X 个
+   - 持久化目录: Y 个
+   - 状态: 已合并/已手动提取/无需提取
 
 🚀 可以开始新的变更: /trinity:new "描述"
 ```
